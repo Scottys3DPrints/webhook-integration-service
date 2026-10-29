@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Webhook Operations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;450;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper:       #fafafb;
+    --card:        #ffffff;
+    --ink:         #14171c;
+    --ink-soft:    #5a626e;
+    --ink-faint:   #8b93a0;
+    --rule:        #e6e8ec;
+    --rule-soft:   #f1f3f6;
+
+    --forest:      #1b4d3e;
+    --forest-soft: #e8f0ec;
+    --sienna:      #9a3412;
+    --sienna-soft: #fbece5;
+    --ink-blue:    #1e4e8c;
+    --ink-blue-soft:#e9eff8;
+    --ochre:       #7c5e10;
+    --ochre-soft:  #f8f1dd;
+
+    --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font: 400 15px/1.5 var(--sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+  @media (max-width: 640px) { .wrap { padding: 0 16px; } }
+
+  .masthead { background: var(--card); border-bottom: 1px solid var(--rule); }
+  .masthead .wrap {
+    display: flex; align-items: flex-end; gap: 20px; flex-wrap: wrap;
+    padding-top: 26px; padding-bottom: 20px;
+  }
+  .brand { margin-right: auto; }
+  .eyebrow {
+    font: 500 11px/1 var(--mono); letter-spacing: .14em;
+    text-transform: uppercase; color: var(--ink-faint);
+  }
+  h1 { font: 600 26px/1.15 var(--sans); letter-spacing: -.021em; margin: 9px 0 0; }
+
+  .mode {
+    font: 500 11px/1 var(--mono); letter-spacing: .09em; text-transform: uppercase;
+    padding: 7px 10px; border-radius: 6px;
+    color: var(--ochre); background: var(--ochre-soft);
+  }
+  .mode.live { color: var(--forest); background: var(--forest-soft); }
+
+  .strip { background: var(--card); border-bottom: 1px solid var(--rule); }
+  .figures {
+    display: grid; grid-template-columns: repeat(5, 1fr);
+    max-width: 1120px; margin: 0 auto; padding: 0 24px;
+  }
+  .figure { padding: 18px 0 20px; }
+  .figure + .figure { border-left: 1px solid var(--rule); padding-left: 20px; }
+  .figure .label {
+    font: 500 10px/1 var(--mono); letter-spacing: .13em;
+    text-transform: uppercase; color: var(--ink-faint);
+  }
+  .figure .value {
+    font: 500 27px/1 var(--mono); letter-spacing: -.02em;
+    margin-top: 10px; font-variant-numeric: tabular-nums;
+  }
+  .figure.good .value { color: var(--forest); }
+  .figure.bad  .value { color: var(--sienna); }
+  .figure.hold .value { color: var(--ochre); }
+
+  @media (max-width: 900px) {
+    .figures { grid-template-columns: repeat(3, 1fr); padding: 0 16px; }
+    .figure:nth-child(4) { border-left: 0; padding-left: 0; }
+    .figure:nth-child(n+4) { border-top: 1px solid var(--rule); }
+  }
+  @media (max-width: 520px) {
+    .figures { grid-template-columns: repeat(2, 1fr); }
+    .figure:nth-child(odd) { border-left: 0; padding-left: 0; }
+    .figure:nth-child(n+3) { border-top: 1px solid var(--rule); }
+  }
+
+  .banner {
+    display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap;
+    margin-top: 26px; padding: 11px 14px;
+    border: 1px solid var(--rule); border-radius: 8px; background: var(--card);
+    font: 400 13px/1.45 var(--mono); color: var(--ink-soft);
+  }
+  .banner.ok { border-left: 3px solid var(--forest); }
+  .banner.degraded { border-left: 3px solid var(--sienna); }
+  .banner b { color: var(--ink); font-weight: 600; }
+
+  section { margin-top: 38px; }
+  section:last-of-type { margin-bottom: 60px; }
+  .section-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 12px; }
+  h2 {
+    font: 500 11px/1 var(--mono); letter-spacing: .13em;
+    text-transform: uppercase; color: var(--ink-faint); margin: 0;
+  }
+  .count { font: 400 11px/1 var(--mono); color: var(--ink-faint); }
+
+  .panel {
+    background: var(--card); border: 1px solid var(--rule);
+    border-radius: 10px; overflow: hidden;
+  }
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    font: 500 10px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase;
+    color: var(--ink-faint); text-align: left; padding: 12px 16px;
+    border-bottom: 1px solid var(--rule); background: var(--rule-soft);
+    white-space: nowrap;
+  }
+  thead th.num {
+    text-align: right;
+    font: 500 10px/1 var(--mono);
+    letter-spacing: .12em;
+  }
+  tbody td { padding: 13px 16px; border-bottom: 1px solid var(--rule-soft); }
+  tbody tr:last-child td { border-bottom: 0; }
+  tbody tr:hover td { background: #fcfcfd; }
+
+  .num {
+    text-align: right; font: 400 14px/1 var(--mono);
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+
+  /* Status edge down the first cell. A <td> will not honour a 3px width. */
+  tbody td.key {
+    box-shadow: inset 3px 0 0 var(--rule);
+    padding-left: 19px;
+    font: 400 13px/1.4 var(--mono);
+    word-break: break-all;
+  }
+  tbody tr.ok   td.key { box-shadow: inset 3px 0 0 var(--forest); }
+  tbody tr.hold td.key { box-shadow: inset 3px 0 0 var(--ochre); }
+  tbody tr.bad  td.key { box-shadow: inset 3px 0 0 var(--sienna); }
+  thead th:first-child { padding-left: 19px; }
+
+  .tag {
+    display: inline-block; font: 500 10px/1 var(--mono); letter-spacing: .09em;
+    text-transform: uppercase; padding: 5px 8px; border-radius: 5px;
+    white-space: nowrap; color: var(--ink-soft); background: var(--rule-soft);
+  }
+  .tag.good { color: var(--forest); background: var(--forest-soft); }
+  .tag.hold { color: var(--ochre);  background: var(--ochre-soft); }
+  .tag.bad  { color: var(--sienna); background: var(--sienna-soft); }
+  .tag.info { color: var(--ink-blue); background: var(--ink-blue-soft); }
+
+  .dupes { font: 400 12px/1 var(--mono); color: var(--ink-faint); }
+  .dupes.has { color: var(--ochre); }
+
+  .when { font: 400 12px/1 var(--mono); color: var(--ink-faint); white-space: nowrap; }
+  .why  { font: 400 12px/1.4 var(--mono); color: var(--sienna); }
+
+  .empty { padding: 40px 16px; text-align: center; color: var(--ink-faint); font-size: 14px; }
+  .empty code {
+    font: 400 13px var(--mono); background: var(--rule-soft);
+    border: 1px solid var(--rule); border-radius: 5px; padding: 2px 6px; color: var(--ink);
+  }
+
+  @media (max-width: 820px) { .hide-md { display: none; } }
+  @media (max-width: 600px) { .hide-sm { display: none; } }
+
+  footer {
+    border-top: 1px solid var(--rule); background: var(--card);
+    padding: 20px 0 40px; color: var(--ink-faint); font: 400 12px/1.6 var(--mono);
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="brand">
+      <div class="eyebrow">Integration</div>
+      <h1>Webhook Operations</h1>
+    </div>
+    <span class="mode{{ '' if dry_run else ' live' }}">
+      {{ 'Dry run — nothing is sent' if dry_run else 'Live — sending' }}
+    </span>
+  </div>
+</header>
+
+<div class="strip">
+  <div class="figures">
+    <div class="figure">
+      <div class="label">Events stored</div>
+      <div class="value">{{ stats.events }}</div>
+    </div>
+    <div class="figure{% if stats.duplicates %} hold{% endif %}">
+      <div class="label">Repeats ignored</div>
+      <div class="value">{{ stats.duplicates }}</div>
+    </div>
+    <div class="figure good">
+      <div class="label">Delivered</div>
+      <div class="value">{{ stats.delivered }}</div>
+    </div>
+    <div class="figure{% if stats.pending %} hold{% endif %}">
+      <div class="label">Queued</div>
+      <div class="value">{{ stats.pending }}</div>
+    </div>
+    <div class="figure{% if stats.dead %} bad{% endif %}">
+      <div class="label">Needs attention</div>
+      <div class="value">{{ stats.dead }}</div>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <div class="banner {{ 'degraded' if degraded else 'ok' }}">
+    {% if degraded %}
+      <span><b>{{ stats.dead }}</b> deliver{{ 'y' if stats.dead == 1 else 'ies' }}
+        gave up after {{ max_attempts }} attempts.</span>
+      <span>·</span>
+      <span>Fix the destination, then POST /admin/requeue to send them again.</span>
+    {% else %}
+      <span>All deliveries <b>accounted for</b>.</span>
+      <span>·</span>
+      <span>{{ stats.duplicates }} repeat deliver{{ 'y' if stats.duplicates == 1 else 'ies' }}
+        absorbed by the dedupe key.</span>
+    {% endif %}
+  </div>
+
+  <section>
+    <div class="section-head">
+      <h2>Events received</h2>
+      <span class="count">{{ events|length }} stored</span>
+    </div>
+
+    <div class="panel">
+      {% if events %}
+      <table>
+        <thead>
+          <tr>
+            <th>Event</th>
+            <th class="hide-sm">Type</th>
+            <th class="hide-md">Source</th>
+            <th class="num">Repeats</th>
+            <th class="num hide-sm">Fan-out</th>
+            <th class="hide-md">Received</th>
+            <th>State</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for event in events %}
+          <tr class="{% if event.dead %}bad{% elif event.pending %}hold{% else %}ok{% endif %}">
+            <td class="key">{{ event.event_id }}</td>
+            <td class="hide-sm">{{ event.type }}</td>
+            <td class="hide-md"><span class="when">{{ event.source }}</span></td>
+            <td class="num">
+              <span class="dupes{{ ' has' if event.duplicates else '' }}">
+                {{ '+' ~ event.duplicates if event.duplicates else '—' }}
+              </span>
+            </td>
+            <td class="num hide-sm">{{ event.delivered }}/{{ event.total }}</td>
+            <td class="hide-md"><span class="when">{{ event.received_at }}</span></td>
+            <td>
+              {% if event.dead %}<span class="tag bad">Needs attention</span>
+              {% elif event.pending %}<span class="tag hold">Queued</span>
+              {% elif event.total %}<span class="tag good">Delivered</span>
+              {% else %}<span class="tag">No routes</span>{% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p class="empty">
+        Nothing received yet. Run <code>python replay.py --twice --drain</code>
+        to push the sample events through.
+      </p>
+      {% endif %}
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Deliveries</h2>
+      <span class="count">{{ deliveries|length }} shown, worst first</span>
+    </div>
+
+    <div class="panel">
+      {% if deliveries %}
+      <table>
+        <thead>
+          <tr>
+            <th>Event</th>
+            <th>Destination</th>
+            <th class="hide-sm">Type</th>
+            <th class="num">Attempts</th>
+            <th class="hide-md">When</th>
+            <th>Result</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for delivery in deliveries %}
+          <tr class="{% if delivery.status == 'dead' %}bad{% elif delivery.status == 'pending' %}hold{% else %}ok{% endif %}">
+            <td class="key">{{ delivery.event_id }}</td>
+            <td><span class="tag info">{{ delivery.destination }}</span></td>
+            <td class="hide-sm">{{ delivery.type }}</td>
+            <td class="num">{{ delivery.attempts }}</td>
+            <td class="hide-md"><span class="when">{{ delivery.when }}</span></td>
+            <td>
+              {% if delivery.status == 'delivered' %}<span class="tag good">Delivered</span>
+              {% elif delivery.status == 'pending' %}<span class="tag hold">Queued</span>
+              {% else %}<span class="tag bad">Gave up</span>{% endif %}
+              {% if delivery.last_error %}<div class="why">{{ delivery.last_error }}</div>{% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p class="empty">No deliveries yet.</p>
+      {% endif %}
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    Signatures verified with HMAC-SHA256 and a {{ max_attempts }}-attempt
+    delivery budget · a repeated event is stored once and delivered once
+  </div>
+</footer>
+
+</body>
+</html>

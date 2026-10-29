@@ -1,0 +1,9 @@
+{
+  "id": "evt_01HQ9X8R4NFAILD",
+  "type": "payment.failed",
+  "occurred_at": "2026-10-29T09:51:30Z",
+  "customer_email": "bruno@example.com",
+  "amount_minor": 8900,
+  "currency": "EUR",
+  "failure_reason": "insufficient_funds"
+}

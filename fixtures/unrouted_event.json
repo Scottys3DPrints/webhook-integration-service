@@ -1,0 +1,8 @@
+{
+  "id": "evt_01HQ9XC9ZZIGNOR",
+  "type": "invoice.draft_created",
+  "occurred_at": "2026-10-29T11:40:00Z",
+  "customer_email": "dana@example.com",
+  "amount_minor": 1500,
+  "currency": "EUR"
+}

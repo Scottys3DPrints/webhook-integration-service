@@ -1,0 +1,9 @@
+{
+  "id": "evt_01HQ9XB1TQCANCL",
+  "type": "subscription.cancelled",
+  "occurred_at": "2026-10-29T11:02:44Z",
+  "customer_email": "chen@example.com",
+  "amount_minor": 0,
+  "currency": "EUR",
+  "plan": "pro_monthly"
+}

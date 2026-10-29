@@ -1,0 +1,9 @@
+{
+  "id": "evt_01HQ9X7K2MPAYOK",
+  "type": "payment.succeeded",
+  "occurred_at": "2026-10-29T09:14:02Z",
+  "customer_email": "ana@example.com",
+  "amount_minor": 24900,
+  "currency": "EUR",
+  "reference": "INV-2026-0418"
+}
